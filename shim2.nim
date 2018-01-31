@@ -1,6 +1,15 @@
 # Userify shim
 # Copyright (c) 2018 Userify Corp
 # import httpclient
+
+# This is a very, very early start on porting shim.py (https://github.com/userify/shim)
+# to Nim. First pursuing feature parity. Achieving feature parity and working in the same way
+# will be a great proof of concept that to prove that Nim can do the job and be easier to convert
+# in phase 2 to a more efficient design.
+# (Note: the resultant shim couldn't be used in production, even if feature complete, because the
+# python script is only 18kb, which is downloaded every 90 seconds; even compressed with upx,
+# a static nim shim will be probably 50x the size)
+
 import os
 import osproc
 import md5
