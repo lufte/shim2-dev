@@ -22,11 +22,8 @@ Nim is now built in `~/Nim/`.
 
     export PATH=$PATH:~/Nim/bin/
     cd
-    mkdir shim2
-    cd shim2
-    wget https://gist.githubusercontent.com/jamiesonbecker/bf4a3c8e244ff3f91ae786ebf67cf925/raw/2983534b1ba938ef9527556b21622f1fb64e809e/shim2.nim \
-      https://gist.githubusercontent.com/jamiesonbecker/c79d59580e026b00a4c39843f951898a/raw/279bb8ca606dda3672bd28f4eec4e39675f11276/post_data_to_server.nim \
-      https://gist.githubusercontent.com/jamiesonbecker/008ed580a767f9596863b4020f0de4eb/raw/a34a1135935d362047d328cec3761320596f9d20/shim_test.sh
+    git clone https://github.com/jamiesonbecker/shim2-dev/
+    cd shim2-dev
     # set up fake data vars:
     sudo bash ./shim_test.sh
 
