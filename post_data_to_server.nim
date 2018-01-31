@@ -4,6 +4,11 @@ import base64
 import json
 import tables
 
+# How to post data to a server.
+# Covers a key part of shim.py that actually connects to the Userify server (configure.userify.com, or whatever)
+# via HTTPS and initiates the connection. (Please note: this was not updated for the TLS features for self-signed servers that
+# have been rolled into Nim core.)
+
 proc postDataToServer*(config: object, post_body: string=""): JsonNode =
 
   let post_body = post_body
