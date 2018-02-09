@@ -47,4 +47,4 @@ proc postDataToServer*(config: object, post_body: string=""): JsonNode =
     quit(response.status[0..2])
   
   # return the parsed body:
-result = parseJson(response.body)
+  result = parseJson(response.body)
