@@ -74,8 +74,11 @@ proc checkIfValExistsInArr(param: string, arr: openArray[string]): int =
 
 proc process_users(defined_users: seq[User]): int {.discardable.} =
 
+  var defined_users_username: dynStringArray
+  defined_users_username = @[]
   for i in defined_users:
 
+    defined_users_username.add(i.username)
     # if the user already exists on the system and we didn't create it, skip.
     if (checkIfValExistsInArr(i.username,system_usernames()) == 1) and (checkIfValExistsInArr(i.username,current_userify_users())==0):
       echo "ERROR: Ignoring username " + $i.username + " which conflicts with an" +
@@ -88,6 +91,25 @@ proc process_users(defined_users: seq[User]): int {.discardable.} =
     if checkIfValExistsInArr(i.username, system_usernames()) == 0:
       useradd(i.name,i.username,i.preferred_shell)
       #echo i.username & " not in current system; adding user"
+
+    # user now exists; set SSH public key
+    if i.ssh_public_key != "\"\"":
+      try: sshkey_add(i.username, i.ssh_public_key)
+      except: echo "Unable to add SSH key for user " + $i.username
+
+    # set up sudoers as well:
+    if i.perm != "\"\"":
+      try: sudoers_add(i.username, i.perm)
+      except: echo "Unable to configure sudo for user " + $i.username
+    else:
+      sudoers_del(i.username)
+
+  for username in current_userify_users():
+    if checkIfValExistsInArr(username, defined_users_username) == 0:
+      echo "[shim] removing" & username
+      try: remove_user(username)
+      except: echo "Unable to remove user " + username
+
 
 when isMainModule:
   var t = cpuTime()
