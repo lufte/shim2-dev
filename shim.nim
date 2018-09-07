@@ -1,10 +1,34 @@
 # Userify shim
 # Copyright (c) 2018 Userify Corp
 
-import times, strutils, random, os
+import times, strutils, random, os, posix
 
 let lineSpacer = "\n******************************"
 let shimVersion = "04012016-1"
+
+type
+  InstanceMetadata = tuple[
+    instanceType: string,
+    hostname: string,
+    amiId: string,
+    mac: string,
+    system: string,
+    node: string,
+    release: string,
+    version: string,
+    machine: string,
+  ]
+
+proc getInstanceMetadata(): InstanceMetadata =
+  var md: InstanceMetadata
+  var uts = posix.Utsname()
+  let unameExitCode = posix.uname(uts)
+  md.system = uts.sysname.join().strip(chars={'\x00'})
+  md.node = uts.nodename.join().strip(chars={'\x00'})
+  md.release = uts.release.join().strip(chars={'\x00'})
+  md.version = uts.version.join().strip(chars={'\x00'})
+  md.machine = uts.machine.join().strip(chars={'\x00'})
+  return md
 
 proc retrieveHttpsProxy(): tuple[host: string, port: int] =
   var httpsProxy = ""
