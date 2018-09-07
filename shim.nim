@@ -6,6 +6,24 @@ import times, strutils, random, os
 let lineSpacer = "\n******************************"
 let shimVersion = "04012016-1"
 
+proc retrieveHttpsProxy(): tuple[host: string, port: int] =
+  var httpsProxy = ""
+  var httpsProxyPort = "443"
+  let envHttpsProxy = os.getEnv("https_proxy").strip()
+  if envHttpsProxy.len() > 0:
+    httpsProxy = envHttpsProxy
+    if httpsProxy.startsWith("http"):
+      httpsProxy = httpsProxy.replace("https://")
+      httpsProxy = httpsProxy.replace("http://")
+      if httpsProxy.find(':') >= 0:
+        var hostPort = httpsProxy.split(':', 1)
+        httpsProxy = hostPort[0]
+        httpsProxyPort = ""
+        for character in hostPort[1]:
+          if isDigit(character):
+            httpsProxyPort.add(character)
+  return (httpsProxy, parseInt(httpsProxyPort))
+
 proc parsePasswd(): seq[seq[string]] =
   var passwds: seq[seq[string]] = @[]
   for line in lines("/etc/passwd"):
