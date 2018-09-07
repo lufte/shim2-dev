@@ -49,7 +49,7 @@ when isMainModule:
     echo("Error: ", getCurrentExceptionMsg())
     echo(lineSpacer)
     timeToWait = toInt(30.0 + 60.0 * rand(1.0))
-  let elapsed = times.cpuTime() - startTime
+  let elapsed = toInt(times.cpuTime() - startTime)
   if elapsed < timeToWait:
     echo("[shim] sleeping: ", timeToWait - elapsed)
     sleep(1000 * (timeToWait - elapsed))
