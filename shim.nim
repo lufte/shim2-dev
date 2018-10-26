@@ -19,6 +19,13 @@ type
     machine: string,
   ]
 
+  Creds = tuple[
+    apiKey: string,
+    apiId: string,
+    companyName: string,
+    projectName: string
+  ]
+
 proc getInstanceMetadata(): InstanceMetadata =
   var md: InstanceMetadata
   var uts = posix.Utsname()
@@ -56,6 +63,20 @@ proc parsePasswd(): seq[seq[string]] =
       passwdFields.add("")
     passwds.add(passwdFields)
   return passwds
+
+proc parseCreds(): Creds =
+  var creds: Creds
+  for line in lines("./creds.py"):
+    let keyVal = line.split("=", 1)
+    if keyVal[0] == "api_key":
+      creds.apiKey = keyVal[1][1..^2]
+    elif keyVal[0] == "api_id":
+      creds.apiId = keyVal[1][1..^2]
+    elif keyVal[0] == "company_name":
+      creds.companyName = keyVal[1][1..^2]
+    elif keyVal[0] == "project_name":
+      creds.projectName = keyVal[1][1..^2]
+  return creds
 
 proc main(): int =
   let passwds = parsePasswd()
