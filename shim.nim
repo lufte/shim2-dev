@@ -26,6 +26,14 @@ type
     projectName: string
   ]
 
+  UserifyConfig = tuple[
+    debug: bool,
+    dryRun: bool,
+    shimHost: string,
+    staticHost: string,
+    selfSigned: bool
+  ]
+
 proc getInstanceMetadata(): InstanceMetadata =
   var md: InstanceMetadata
   var uts = posix.Utsname()
@@ -63,6 +71,31 @@ proc parsePasswd(): seq[seq[string]] =
       passwdFields.add("")
     passwds.add(passwdFields)
   return passwds
+
+proc parseUserifyConfig(): UserifyConfig =
+  var config: UserifyConfig
+  for line in lines("./userify_config.py"):
+    let keyVal = line.split("=", 1)
+    if keyVal[0] == "debug":
+      if keyVal[1] == "0":
+        config.debug = false
+      else:
+        config.debug = true
+    elif keyVal[0] == "dry_run":
+      if keyVal[1] == "0":
+        config.dryRun = false
+      else:
+        config.dryRun = true
+    elif keyVal[0] == "shim_host":
+      config.shimHost = keyVal[1][1..^2]
+    elif keyVal[0] == "static_host":
+      config.staticHost = keyVal[1][1..^2]
+    elif keyVal[0] == "selfSigned":
+      if keyVal[1] == "0":
+        config.dryRun = false
+      else:
+        config.dryRun = true
+  return config
 
 proc parseCreds(): Creds =
   var creds: Creds
