@@ -1,7 +1,7 @@
 # Userify shim
 # Copyright (c) 2018 Userify Corp
 
-import times, strutils, random, os, posix
+import times, strutils, random, os, posix, json, httpclient, nativesockets
 
 let lineSpacer = "\n******************************"
 let shimVersion = "04012016-1"
@@ -17,6 +17,7 @@ type
     release: string,
     version: string,
     machine: string,
+    shimVersion: string
   ]
 
   Creds = tuple[
@@ -45,23 +46,11 @@ proc getInstanceMetadata(): InstanceMetadata =
   md.machine = uts.machine.join().strip(chars={'\x00'})
   return md
 
-proc retrieveHttpsProxy(): tuple[host: string, port: int] =
-  var httpsProxy = ""
-  var httpsProxyPort = "443"
-  let envHttpsProxy = os.getEnv("https_proxy").strip()
-  if envHttpsProxy.len() > 0:
-    httpsProxy = envHttpsProxy
-    if httpsProxy.startsWith("http"):
-      httpsProxy = httpsProxy.replace("https://")
-      httpsProxy = httpsProxy.replace("http://")
-      if httpsProxy.find(':') >= 0:
-        var hostPort = httpsProxy.split(':', 1)
-        httpsProxy = hostPort[0]
-        httpsProxyPort = ""
-        for character in hostPort[1]:
-          if isDigit(character):
-            httpsProxyPort.add(character)
-  return (httpsProxy, parseInt(httpsProxyPort))
+proc retrieveHttpsProxy(): httpclient.Proxy =
+  let httpsProxy = os.getEnv("https_proxy").strip()
+  if httpsProxy.len() > 0:
+    return httpclient.newProxy(httpsProxy)
+  return nil
 
 proc parsePasswd(): seq[seq[string]] =
   var passwds: seq[seq[string]] = @[]
@@ -111,8 +100,27 @@ proc parseCreds(): Creds =
       creds.projectName = keyVal[1][1..^2]
   return creds
 
+proc https(): json.JsonNode =
+  let client = httpclient.newHttpClient(timeout = 60000)
+  client.headers = httpclient.newHttpHeaders({
+    "Accept": "text/plain, */json",
+    # "Authorization": auth(),
+    # "X-Local-IP": getIp()
+  })
+  let host = "http://localhost:9000"
+  var body = getInstanceMetadata()
+  let httpsProxy = retrieveHttpsProxy()
+
+  body.hostname = nativesockets.getHostname()
+  if body.hostname.len() == 0:
+    body.hostname = client.headers["X-Local-IP"]
+  let response = client.request(host & "/api/userify/configure",
+                                httpMethod = "POST", body = $body)
+  return json.parseJson(response.body)
+
 proc main(): int =
   let passwds = parsePasswd()
+  echo(https())
   return 1
 
 when isMainModule:
